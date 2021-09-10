@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:personapi;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:personapi
     driverClassName: org.h2.Driver
     username: sa
     password:
@@ -11,6 +11,7 @@ spring:
       path: /h2-console
 
   jpa:
+    open-in-view: false
     database-platform: org.hibernate.dialect.H2Dialect
     show-sql: true
     properties:
