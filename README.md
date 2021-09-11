@@ -16,16 +16,16 @@ Uri|Método|Descrição|Request Body|Response Body|Status
     {
         "firstName": "Friedrich",
         "lastName": "Hayek",
-        "cpf": "99988877766",
+        "cpf": "35562354470",
         "birthDate": "1899-03-08",
         "phones": [
           {
             "type": "MOBILE",
-            "number": "(99) 99999-9999"
+            "number": "(99)99999-9999"
           },
           {
             "type": "HOME",
-            "number": "(88) 88888-8888"
+            "number": "(88)88888-8888"
           }
         ]
     }

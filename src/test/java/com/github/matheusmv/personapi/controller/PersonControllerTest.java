@@ -17,10 +17,12 @@ import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import java.util.Collections;
 
+import static com.github.matheusmv.personapi.utils.JsonConversionUtils.asJsonString;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -94,5 +96,37 @@ public class PersonControllerTest {
         mockMvc.perform(get(PERSON_API_URL_PATH + "/" + INVALID_PERSON_ID)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void whenPOSTIsCalledThenAPersonIsCreated() throws Exception {
+        // given
+        var personDTO = PersonUtils.toPersonDTO();
+
+        // when
+        when(personService.create(personDTO)).thenReturn(personDTO);
+
+        // then
+        mockMvc.perform(post(PERSON_API_URL_PATH)
+                .contentType(MediaType.APPLICATION_JSON).content(asJsonString(personDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.firstName", is(personDTO.getFirstName())))
+                .andExpect(jsonPath("$.lastName", is(personDTO.getLastName())))
+                .andExpect(jsonPath("$.cpf", is(personDTO.getCpf())))
+                .andExpect(jsonPath("$.birthDate", is(personDTO.getBirthDate())))
+                .andExpect(jsonPath("$.phones[0].type", is(personDTO.getPhones().get(0).getType().toString())))
+                .andExpect(jsonPath("$.phones[0].number", is(personDTO.getPhones().get(0).getNumber())));
+    }
+
+    @Test
+    void whenPOSTIsCalledWithoutRequiredFieldThenAnErrorIsReturned() throws Exception {
+        // given
+        var personDTO = PersonUtils.toPersonDTO();
+        personDTO.setCpf(null);
+
+        // then
+        mockMvc.perform(post(PERSON_API_URL_PATH)
+                .contentType(MediaType.APPLICATION_JSON).content(asJsonString(personDTO)))
+                .andExpect(status().isBadRequest());
     }
 }

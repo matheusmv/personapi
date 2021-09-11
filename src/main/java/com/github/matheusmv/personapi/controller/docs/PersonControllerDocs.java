@@ -24,4 +24,11 @@ public interface PersonControllerDocs {
             @ApiResponse(code = 404, message = "Failure, person with given id not found.")
     })
     ResponseEntity<PersonDTO> findPersonById(Long id);
+
+    @ApiOperation(value = "Person creation operation")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Success, person created"),
+            @ApiResponse(code = 400, message = "Missing required fields or wrong field range value.")
+    })
+    ResponseEntity<PersonDTO> createAPerson(PersonDTO personDTO);
 }

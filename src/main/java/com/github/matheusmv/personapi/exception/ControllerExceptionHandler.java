@@ -12,9 +12,17 @@ import java.time.Instant;
 public class ControllerExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<StandardError> objectNotFound(ResourceNotFoundException exception,
-                                                        HttpServletRequest request) {
+    public ResponseEntity<StandardError> resourceNotFoundException(ResourceNotFoundException exception,
+                                                                   HttpServletRequest request) {
         var status = HttpStatus.NOT_FOUND;
+        var error = getStandardError(exception, request, status);
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(CPFAlreadyRegisteredException.class)
+    public ResponseEntity<StandardError> cpfAlreadyRegisteredException(CPFAlreadyRegisteredException exception,
+                                                                       HttpServletRequest request) {
+        var status = HttpStatus.BAD_REQUEST;
         var error = getStandardError(exception, request, status);
         return ResponseEntity.status(status).body(error);
     }

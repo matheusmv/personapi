@@ -1,6 +1,8 @@
 package com.github.matheusmv.personapi.service;
 
 import com.github.matheusmv.personapi.dto.mapper.PersonMapper;
+import com.github.matheusmv.personapi.entity.Person;
+import com.github.matheusmv.personapi.exception.CPFAlreadyRegisteredException;
 import com.github.matheusmv.personapi.exception.ResourceNotFoundException;
 import com.github.matheusmv.personapi.repository.PersonRepository;
 import com.github.matheusmv.personapi.utils.PersonUtils;
@@ -20,12 +22,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PersonServiceTest {
 
     private static final long INVALID_PERSON_ID = 2L;
+    private static final String CPF_ALREADY_REGISTERED = "21536261882";
 
     @Mock
     private PersonRepository personRepository;
@@ -77,5 +81,42 @@ public class PersonServiceTest {
 
         // then
         assertThrows(ResourceNotFoundException.class, () -> personService.getById(INVALID_PERSON_ID));
+    }
+
+    @Test
+    void whenGivenPersonDTOThenReturnSavedPersonDTO() {
+        // given
+        var expectedPersonDTO = PersonUtils.toPersonDTO();
+        var expectedSavedPerson = PersonUtils.toPerson();
+
+        // when
+        when(personMapper.toModel(expectedPersonDTO)).thenReturn(expectedSavedPerson);
+        when(personRepository.save(any(Person.class))).thenReturn(expectedSavedPerson);
+        when(personMapper.toDTO(expectedSavedPerson)).thenReturn(expectedPersonDTO);
+
+        // then
+        var savedPerson = personService.create(expectedPersonDTO);
+
+        assertAll("testing create",
+                () -> assertThat(savedPerson, is(not(Optional.empty()))),
+                () -> assertThat(savedPerson.getId(), is(equalTo(expectedPersonDTO.getId()))),
+                () -> assertThat(savedPerson.getFirstName(), is(equalTo(expectedPersonDTO.getFirstName()))),
+                () -> assertThat(savedPerson.getPhones(), is(equalTo(expectedPersonDTO.getPhones()))));
+    }
+
+    @Test
+    void whenGivenPersonDTOWithAlreadyRegisteredCPFThenThrowAnException() {
+        // given
+        var personDTO = PersonUtils.toPersonDTO();
+        personDTO.setCpf(CPF_ALREADY_REGISTERED);
+
+        var duplicatedPerson = PersonUtils.toPerson();
+        duplicatedPerson.setCpf(CPF_ALREADY_REGISTERED);
+
+        // when
+        when(personRepository.findByCpf(personDTO.getCpf())).thenReturn(Optional.of(duplicatedPerson));
+
+        // then
+        assertThrows(CPFAlreadyRegisteredException.class, () -> personService.create(personDTO));
     }
 }
