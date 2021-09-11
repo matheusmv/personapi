@@ -17,4 +17,11 @@ public interface PersonControllerDocs {
             @ApiResponse(code = 200, message = "List of all persons registered in the system"),
     })
     ResponseEntity<List<PersonDTO>> listPersons();
+
+    @ApiOperation(value = "Returns person found by a given id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success, person found in the system"),
+            @ApiResponse(code = 404, message = "Failure, person with given id not found.")
+    })
+    ResponseEntity<PersonDTO> findPersonById(Long id);
 }

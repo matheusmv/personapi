@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,5 +25,12 @@ public class PersonController implements PersonControllerDocs {
         var listOfPersons = personService.listAll();
 
         return ResponseEntity.ok().body(listOfPersons);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PersonDTO> findPersonById(@PathVariable Long id) {
+        var personDTO = personService.getById(id);
+
+        return ResponseEntity.ok().body(personDTO);
     }
 }

@@ -1,7 +1,7 @@
 package com.github.matheusmv.personapi.mapper;
 
-import com.github.matheusmv.personapi.builder.PersonBuilder;
 import com.github.matheusmv.personapi.dto.mapper.PersonMapper;
+import com.github.matheusmv.personapi.utils.PersonUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,7 +16,7 @@ public class PersonMapperTest {
 
     @Test
     void testGivenPersonDTOThenReturnPersonEntity() {
-        var personDTO = PersonBuilder.builder().build().toPersonDTO();
+        var personDTO = PersonUtils.toPersonDTO();
         var person = personMapper.toModel(personDTO);
 
         assertEquals(personDTO.getFirstName(), person.getFirstName());
@@ -32,7 +32,7 @@ public class PersonMapperTest {
 
     @Test
     void testGivenPersonEntityThenReturnPersonDTO() {
-        var person = PersonBuilder.builder().build().toPerson();
+        var person = PersonUtils.toPerson();
         var personDTO = personMapper.toDTO(person);
 
         assertEquals(person.getFirstName(), personDTO.getFirstName());

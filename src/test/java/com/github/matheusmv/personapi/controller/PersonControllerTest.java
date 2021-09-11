@@ -1,7 +1,8 @@
 package com.github.matheusmv.personapi.controller;
 
-import com.github.matheusmv.personapi.builder.PersonBuilder;
+import com.github.matheusmv.personapi.exception.ResourceNotFoundException;
 import com.github.matheusmv.personapi.service.PersonService;
+import com.github.matheusmv.personapi.utils.PersonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 import java.util.Collections;
 
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class PersonControllerTest {
 
     private static final String PERSON_API_URL_PATH = "/api/v1/people";
+    private static final long INVALID_PERSON_ID = 2L;
 
     private MockMvc mockMvc;
 
@@ -46,7 +49,7 @@ public class PersonControllerTest {
     @Test
     void whenGETListWithPersonsIsCalledThenOkStatusIsReturned() throws Exception {
         // given
-        var personDTO = PersonBuilder.builder().build().toPersonDTO();
+        var personDTO = PersonUtils.toPersonDTO();
 
         // when
         when(personService.listAll()).thenReturn(Collections.singletonList(personDTO));
@@ -60,5 +63,36 @@ public class PersonControllerTest {
                 .andExpect(jsonPath("$[0].birthDate", is(personDTO.getBirthDate())))
                 .andExpect(jsonPath("$[0].phones[0].type", is(personDTO.getPhones().get(0).getType().toString())))
                 .andExpect(jsonPath("$[0].phones[0].number", is(personDTO.getPhones().get(0).getNumber())));
+    }
+
+    @Test
+    void whenGETIsCalledWithValidIdThenOkStatusIsReturned() throws Exception {
+        // given
+        var personDTO = PersonUtils.toPersonDTO();
+
+        // when
+        when(personService.getById(personDTO.getId())).thenReturn(personDTO);
+
+        // then
+        mockMvc.perform(get(PERSON_API_URL_PATH + "/" + personDTO.getId())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName", is(personDTO.getFirstName())))
+                .andExpect(jsonPath("$.lastName", is(personDTO.getLastName())))
+                .andExpect(jsonPath("$.cpf", is(personDTO.getCpf())))
+                .andExpect(jsonPath("$.birthDate", is(personDTO.getBirthDate())))
+                .andExpect(jsonPath("$.phones[0].type", is(personDTO.getPhones().get(0).getType().toString())))
+                .andExpect(jsonPath("$.phones[0].number", is(personDTO.getPhones().get(0).getNumber())));
+    }
+
+    @Test
+    void whenGETIsCalledWithInvalidIdThenNotFoundStatusIsReturned() throws Exception {
+        // when
+        doThrow(ResourceNotFoundException.class).when(personService).getById(INVALID_PERSON_ID);
+
+        // then
+        mockMvc.perform(get(PERSON_API_URL_PATH + "/" + INVALID_PERSON_ID)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 }
