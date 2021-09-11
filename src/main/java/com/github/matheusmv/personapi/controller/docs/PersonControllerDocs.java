@@ -31,4 +31,12 @@ public interface PersonControllerDocs {
             @ApiResponse(code = 400, message = "Missing required fields or wrong field range value.")
     })
     ResponseEntity<PersonDTO> createAPerson(PersonDTO personDTO);
+
+    @ApiOperation(value = "Person update operation")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success, person updated"),
+            @ApiResponse(code = 400, message = "Missing required fields or wrong field range value."),
+            @ApiResponse(code = 404, message = "Failure, person with given id not found.")
+    })
+    ResponseEntity<PersonDTO> updateAPerson(Long id, PersonDTO personDTO);
 }

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -128,5 +129,38 @@ public class PersonControllerTest {
         mockMvc.perform(post(PERSON_API_URL_PATH)
                 .contentType(MediaType.APPLICATION_JSON).content(asJsonString(personDTO)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void whenPUTIsCalledThenAPersonIsUpdated() throws Exception {
+        // given
+        var personDetailsDTO = PersonUtils.toPersonDTO();
+        var expectedUpdatedPersonDTO = PersonUtils.toPersonDTO();
+
+        // when
+        when(personService.update(expectedUpdatedPersonDTO.getId(), personDetailsDTO)).thenReturn(personDetailsDTO);
+
+        // then
+        mockMvc.perform(put(PERSON_API_URL_PATH + "/" + expectedUpdatedPersonDTO.getId())
+                .contentType(MediaType.APPLICATION_JSON).content(asJsonString(personDetailsDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName", is(expectedUpdatedPersonDTO.getFirstName())))
+                .andExpect(jsonPath("$.lastName", is(expectedUpdatedPersonDTO.getLastName())))
+                .andExpect(jsonPath("$.cpf", is(expectedUpdatedPersonDTO.getCpf())))
+                .andExpect(jsonPath("$.birthDate", is(expectedUpdatedPersonDTO.getBirthDate())));
+    }
+
+    @Test
+    void whenPUTIsCalledWithInvalidIdThenAnErrorIsReturned() throws Exception {
+        // given
+        var personDetailsDTO = PersonUtils.toPersonDTO();
+
+        // when
+        doThrow(ResourceNotFoundException.class).when(personService).update(INVALID_PERSON_ID, personDetailsDTO);
+
+        // then
+        mockMvc.perform(put(PERSON_API_URL_PATH + "/" + INVALID_PERSON_ID)
+                .contentType(MediaType.APPLICATION_JSON).content(asJsonString(personDetailsDTO)))
+                .andExpect(status().isNotFound());
     }
 }

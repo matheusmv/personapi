@@ -119,4 +119,37 @@ public class PersonServiceTest {
         // then
         assertThrows(CPFAlreadyRegisteredException.class, () -> personService.create(personDTO));
     }
+
+    @Test
+    void whenUpdateIsCalledThenUpdateAPersonDetails() {
+        // given
+        var expectedUpdatedPersonDTO = PersonUtils.toPersonDTO();
+        var expectedUpdatedPerson = PersonUtils.toPerson();
+
+        // when
+        when(personRepository.findById(expectedUpdatedPerson.getId())).thenReturn(Optional.of(expectedUpdatedPerson));
+        when(personMapper.toModel(expectedUpdatedPersonDTO)).thenReturn(expectedUpdatedPerson);
+        when(personRepository.save(any(Person.class))).thenReturn(expectedUpdatedPerson);
+        when(personMapper.toDTO(expectedUpdatedPerson)).thenReturn(expectedUpdatedPersonDTO);
+
+        // then
+        var updatedPerson = personService.update(expectedUpdatedPerson.getId(), expectedUpdatedPersonDTO);
+
+        assertAll("test update",
+                () -> assertThat(updatedPerson, equalTo(expectedUpdatedPersonDTO)),
+                () -> assertThat(updatedPerson.getId(), is(equalTo(expectedUpdatedPersonDTO.getId()))),
+                () -> assertThat(updatedPerson.getFirstName(), is(equalTo(expectedUpdatedPersonDTO.getFirstName()))));
+    }
+
+    @Test
+    void whenUpdateIsCalledWithInvalidIdThrownAnException() {
+        // given
+        var personDTO = PersonUtils.toPersonDTO();
+
+        // when
+        when(personRepository.findById(INVALID_PERSON_ID)).thenReturn(Optional.empty());
+
+        // then
+        assertThrows(ResourceNotFoundException.class, () -> personService.update(INVALID_PERSON_ID, personDTO));
+    }
 }
