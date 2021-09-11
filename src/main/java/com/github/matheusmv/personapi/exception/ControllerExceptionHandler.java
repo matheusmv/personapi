@@ -27,6 +27,14 @@ public class ControllerExceptionHandler {
         return ResponseEntity.status(status).body(error);
     }
 
+    @ExceptionHandler(DatabaseException.class)
+    public ResponseEntity<StandardError> databaseException(DatabaseException exception,
+                                                           HttpServletRequest request) {
+        var status = HttpStatus.BAD_REQUEST;
+        var error = getStandardError(exception, request, status);
+        return ResponseEntity.status(status).body(error);
+    }
+
     private StandardError getStandardError(RuntimeException exception,
                                            HttpServletRequest request,
                                            HttpStatus status) {

@@ -23,6 +23,9 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -151,5 +154,31 @@ public class PersonServiceTest {
 
         // then
         assertThrows(ResourceNotFoundException.class, () -> personService.update(INVALID_PERSON_ID, personDTO));
+    }
+
+    @Test
+    void whenDeleteIsCalledThenDeleteAPersonDetails() {
+        // given
+        var expectedDeletedPersonDTO = PersonUtils.toPersonDTO();
+        var expectedDeletedPerson = PersonUtils.toPerson();
+
+        // when
+        when(personRepository.findById(expectedDeletedPersonDTO.getId())).thenReturn(Optional.of(expectedDeletedPerson));
+        doNothing().when(personRepository).delete(expectedDeletedPerson);
+
+        // then
+        personService.delete(expectedDeletedPersonDTO.getId());
+
+        verify(personRepository, times(1)).findById(expectedDeletedPersonDTO.getId());
+        verify(personRepository, times(1)).delete(expectedDeletedPerson);
+    }
+
+    @Test
+    void whenDeleteIsCalledWithInvalidIdThrownAnException() {
+        // when
+        when(personRepository.findById(INVALID_PERSON_ID)).thenReturn(Optional.empty());
+
+        // then
+        assertThrows(ResourceNotFoundException.class, () -> personService.delete(INVALID_PERSON_ID));
     }
 }

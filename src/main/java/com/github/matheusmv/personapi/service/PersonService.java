@@ -4,11 +4,13 @@ import com.github.matheusmv.personapi.dto.PersonDTO;
 import com.github.matheusmv.personapi.dto.mapper.PersonMapper;
 import com.github.matheusmv.personapi.entity.Person;
 import com.github.matheusmv.personapi.exception.CPFAlreadyRegisteredException;
+import com.github.matheusmv.personapi.exception.DatabaseException;
 import com.github.matheusmv.personapi.exception.ResourceNotFoundException;
 import com.github.matheusmv.personapi.repository.PersonRepository;
 import com.github.matheusmv.personapi.service.util.CPFValidation;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,5 +95,16 @@ public class PersonService {
                             .map(LocalDate::parse)
                             .ifPresent(person::setBirthDate);
                 });
+    }
+
+    public void delete(Long personId) {
+        var person = personRepository.findById(personId)
+                .orElseThrow(() -> new ResourceNotFoundException("No person found with given id: " + personId));
+
+        try {
+            personRepository.delete(person);
+        } catch (DataIntegrityViolationException exception) {
+            throw new DatabaseException("Integrity violation");
+        }
     }
 }

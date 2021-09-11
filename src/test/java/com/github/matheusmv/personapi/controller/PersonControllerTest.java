@@ -16,11 +16,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static com.github.matheusmv.personapi.utils.JsonConversionUtils.asJsonString;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -161,6 +164,31 @@ public class PersonControllerTest {
         // then
         mockMvc.perform(put(PERSON_API_URL_PATH + "/" + INVALID_PERSON_ID)
                 .contentType(MediaType.APPLICATION_JSON).content(asJsonString(personDetailsDTO)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void whenDELETEIsCalledWithValidIdThenNoContentStatusIsReturned() throws Exception {
+        // given
+        var personToDeleteDTO = PersonUtils.toPersonDTO();
+
+        //when
+        doNothing().when(personService).delete(personToDeleteDTO.getId());
+
+        // then
+        mockMvc.perform(delete(PERSON_API_URL_PATH + "/" + personToDeleteDTO.getId())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void whenDELETEIsCalledWithInvalidIdThenNotFoundStatusIsReturned() throws Exception {
+        //when
+        doThrow(ResourceNotFoundException.class).when(personService).delete(INVALID_PERSON_ID);
+
+        // then
+        mockMvc.perform(delete(PERSON_API_URL_PATH + "/" + INVALID_PERSON_ID)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 }

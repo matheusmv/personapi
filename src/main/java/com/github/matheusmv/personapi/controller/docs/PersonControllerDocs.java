@@ -39,4 +39,11 @@ public interface PersonControllerDocs {
             @ApiResponse(code = 404, message = "Failure, person with given id not found.")
     })
     ResponseEntity<PersonDTO> updateAPerson(Long id, PersonDTO personDTO);
+
+    @ApiOperation(value = "Person delete operation")
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Success, person deleted"),
+            @ApiResponse(code = 404, message = "Failure, person with given id not found.")
+    })
+    ResponseEntity<PersonDTO> deleteAPerson(Long id);
 }
